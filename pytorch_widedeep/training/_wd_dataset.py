@@ -75,7 +75,10 @@ class WideDeepDataset(Dataset):
                     xdi = xdi[:, :, None]
                 xdi = xdi.transpose(2, 0, 1)
                 if "int" in str(xdi.dtype):
-                    xdi = (xdi / xdi.max()).astype("float32")
+                    if xdi.max():
+                        xdi = (xdi / xdi.max()).astype("float32")
+                    else:
+                        xdi = xdi.astype("float32")
             # if ToTensor() is included, simply apply transforms
             if "ToTensor" in self.transforms_names:
                 xdi = self.transforms(xdi)
