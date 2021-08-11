@@ -100,22 +100,32 @@ class ImagePreprocessor(BasePreprocessor):
         image_list = df[self.img_col].tolist()
         if self.verbose:
             print("Reading Images from {}".format(self.img_path))
-        imgs = [cv2.imread("/".join([self.img_path, img])) for img in image_list]
+#         imgs = [cv2.imread("/".join([self.img_path, img])) for img in image_list]
 
-        # finding images with different height and width
-        aspect = [(im.shape[0], im.shape[1]) for im in imgs]
-        aspect_r = [a[0] / a[1] for a in aspect]
-        diff_idx = [i for i, r in enumerate(aspect_r) if r != 1.0]
+#         # finding images with different height and width
+#         aspect = [(im.shape[0], im.shape[1]) for im in imgs]
+#         aspect_r = [a[0] / a[1] for a in aspect]
+#         diff_idx = [i for i, r in enumerate(aspect_r) if r != 1.0]
 
-        if self.verbose:
-            print("Resizing")
+#         if self.verbose:
+#             print("Resizing")
+#         resized_imgs = []
+#         for i, img in tqdm(enumerate(imgs), total=len(imgs), disable=self.verbose != 1):
+#             if i in diff_idx:
+#                 resized_imgs.append(self.aap.preprocess(img))
+#             else:
+#                 # if aspect ratio is 1:1, no need for AspectAwarePreprocessor
+#                 resized_imgs.append(self.spp.preprocess(img))
+        
         resized_imgs = []
-        for i, img in tqdm(enumerate(imgs), total=len(imgs), disable=self.verbose != 1):
-            if i in diff_idx:
-                resized_imgs.append(self.aap.preprocess(img))
+        for i, img in tqdm(enumerate(image_list), total=len(image_list), disable=self.verbose != 1):
+            im = cv2.imread("/".join([self.img_path, img]))
+            r = im.shape[0] / im.shape[1]
+            if r != 1.0:
+                resized_imgs.append(self.aap.preprocess(im))
             else:
-                # if aspect ratio is 1:1, no need for AspectAwarePreprocessor
-                resized_imgs.append(self.spp.preprocess(img))
+                resized_imgs.append(self.spp.preprocess(im))
+                
 
         if self._compute_normalising_metrics:
             if self.verbose:
